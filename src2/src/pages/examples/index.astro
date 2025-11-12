@@ -1,0 +1,37 @@
+---
+import BaseLayout from "../../layouts/Base.astro";
+import NestedDrawer from "../../components/examples/nested-drawer.svelte";
+import ScrollableDrawer from "../../components/examples/scrollable-drawer.svelte";
+import SnapPointDrawer from "../../components/examples/snap-point-drawer.svelte";
+import DirectionDrawer from "../../components/(components)/direction-drawer.svelte";
+import NonDraggableDrawer from "../../components/examples/non-draggable-drawer.svelte";
+
+const directions = ["top", "left", "bottom", "right"] as const;
+---
+
+<BaseLayout title="Usage Examples">
+	<div class="mx-auto max-w-2xl pt-64 text-center">
+		<div class="relative flex flex-col items-center justify-evenly p-8">
+			<h1 class="relative mb-4 text-2xl font-semibold">Usage Examples</h1>
+			<div class="mb-4">
+				<NestedDrawer client:load />
+			</div>
+			<div class="mb-4">
+				<ScrollableDrawer client:load />
+			</div>
+			<div class="mb-4">
+				<SnapPointDrawer client:load />
+			</div>
+			{directions.map((direction) => (
+				<div class="mb-4">
+					<DirectionDrawer client:load direction={direction} />
+				</div>
+			))}
+			<div>
+				<NonDraggableDrawer client:load />
+			</div>
+		</div>
+	</div>
+</BaseLayout>
+
+
