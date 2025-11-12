@@ -1,6 +1,4 @@
-"use client";
-
-import React, { createContext, useContext, useRef, useState, useCallback, useEffect } from "react";
+import * as React from "react";
 import type { DrawerDirection } from "../internal/types";
 import type { CreateVaulProps } from "../internal/vaul";
 
@@ -39,10 +37,10 @@ type DrawerContextValue = {
 	) => void;
 };
 
-const DrawerContext = createContext<DrawerContextValue | null>(null);
+const DrawerContext = React.createContext<DrawerContextValue | null>(null);
 
 export function useDrawerContext() {
-	const context = useContext(DrawerContext);
+	const context = React.useContext(DrawerContext);
 	if (!context) {
 		throw new Error("Drawer components must be used within a Drawer.Root");
 	}

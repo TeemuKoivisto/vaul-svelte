@@ -1,6 +1,4 @@
-"use client";
-
-import React, { useRef, useState, useCallback, useEffect } from "react";
+import * as React from "react";
 import { Dialog } from "@radix-ui/react-dialog";
 import { DrawerProvider } from "../ctx";
 import type { Props } from "./types";
@@ -16,16 +14,16 @@ export function DrawerRoot({
 	children,
 	...props
 }: Props) {
-	const [internalOpen, setInternalOpen] = useState(controlledOpen ?? false);
-	const [visible, setVisible] = useState(false);
-	const drawerRef = useRef<HTMLDivElement>(null);
-	const overlayRef = useRef<HTMLDivElement>(null);
-	const triggerRef = useRef<HTMLButtonElement>(null);
-	const [keyboardIsOpen, setKeyboardIsOpen] = useState(false);
+	const [internalOpen, setInternalOpen] = React.useState(controlledOpen ?? false);
+	const [visible, setVisible] = React.useState(false);
+	const drawerRef = React.useRef<HTMLDivElement>(null);
+	const overlayRef = React.useRef<HTMLDivElement>(null);
+	const triggerRef = React.useRef<HTMLButtonElement>(null);
+	const [keyboardIsOpen, setKeyboardIsOpen] = React.useState(false);
 
 	const open = controlledOpen ?? internalOpen;
 
-	const handleOpenChange = useCallback(
+	const handleOpenChange = React.useCallback(
 		(newOpen: boolean) => {
 			if (controlledOpen === undefined) {
 				setInternalOpen(newOpen);
@@ -35,7 +33,7 @@ export function DrawerRoot({
 		[controlledOpen, onOpenChange]
 	);
 
-	const closeDrawer = useCallback(
+	const closeDrawer = React.useCallback(
 		(withKeyboard = false) => {
 			handleOpenChange(false);
 			if (withKeyboard) {
@@ -45,22 +43,22 @@ export function DrawerRoot({
 		[handleOpenChange]
 	);
 
-	const openDrawer = useCallback(() => {
+	const openDrawer = React.useCallback(() => {
 		handleOpenChange(true);
 	}, [handleOpenChange]);
 
-	const onPress = useCallback((event: React.PointerEvent<HTMLElement>) => {
+	const onPress = React.useCallback((event: React.PointerEvent<HTMLElement>) => {
 		// Placeholder for drag functionality
 	}, []);
 
-	const onDrag = useCallback(
+	const onDrag = React.useCallback(
 		(event: React.PointerEvent<HTMLElement> | React.TouchEvent<HTMLElement>) => {
 			// Placeholder for drag functionality
 		},
 		[]
 	);
 
-	const onRelease = useCallback(
+	const onRelease = React.useCallback(
 		(
 			event:
 				| React.PointerEvent<HTMLElement>
@@ -72,11 +70,11 @@ export function DrawerRoot({
 		[]
 	);
 
-	const getContentStyle = useCallback((style?: string | null) => {
+	const getContentStyle = React.useCallback((style?: string | null) => {
 		return style || "";
 	}, []);
 
-	useEffect(() => {
+	React.useEffect(() => {
 		if (open) {
 			// Set visible after mount for animation
 			const timer = setTimeout(() => setVisible(true), 0);
@@ -86,7 +84,7 @@ export function DrawerRoot({
 		}
 	}, [open]);
 
-	const handleOverlayMouseUp = useCallback(
+	const handleOverlayMouseUp = React.useCallback(
 		(e: React.MouseEvent<HTMLDivElement>) => {
 			onRelease(e);
 		},

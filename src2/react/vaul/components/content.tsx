@@ -1,6 +1,4 @@
-"use client";
-
-import React, { useEffect } from "react";
+import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useDrawerContext } from "../ctx";
 import type { ContentProps } from "./types";
@@ -23,7 +21,7 @@ export const DrawerContent = React.forwardRef<HTMLDivElement, ContentProps>(
 			[ref, drawerRef]
 		);
 
-		useEffect(() => {
+		React.useEffect(() => {
 			if (visible && drawerRef.current) {
 				// Mark content as visible for animations
 				drawerRef.current.setAttribute("data-vaul-drawer-visible", "true");

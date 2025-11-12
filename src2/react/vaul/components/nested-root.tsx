@@ -1,6 +1,4 @@
-"use client";
-
-import React from "react";
+import * as React from "react";
 import { DrawerRoot } from "./root";
 import { useDrawerContext } from "../ctx";
 import type { Props } from "./types";

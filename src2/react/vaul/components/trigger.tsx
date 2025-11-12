@@ -1,6 +1,4 @@
-"use client";
-
-import React from "react";
+import * as React from "react";
 import { DialogTrigger } from "@radix-ui/react-dialog";
 import { useDrawerContext } from "../ctx";
 

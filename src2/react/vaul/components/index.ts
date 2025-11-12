@@ -5,7 +5,7 @@ export { DrawerNestedRoot as NestedRoot } from "./nested-root";
 export { DrawerClose as Close } from "./close";
 export { DrawerTrigger as Trigger } from "./trigger";
 
-import { DialogPortal, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { DialogPortal, DialogTitle, DialogDescription } from "@radix-ui/react-dialog";
 
 export const Portal = DialogPortal;
 export const Title = DialogTitle;
