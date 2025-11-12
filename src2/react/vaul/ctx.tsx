@@ -3,9 +3,9 @@ import type { DrawerDirection } from "../internal/types";
 import type { CreateVaulProps } from "../internal/vaul";
 
 type DrawerContextValue = {
-	drawerRef: React.RefObject<HTMLDivElement>;
-	overlayRef: React.RefObject<HTMLDivElement>;
-	triggerRef: React.RefObject<HTMLButtonElement>;
+	drawerRef: React.RefObject<HTMLDivElement | null>;
+	overlayRef: React.RefObject<HTMLDivElement | null>;
+	triggerRef: React.RefObject<HTMLButtonElement | null>;
 	isOpen: boolean;
 	visible: boolean;
 	direction: DrawerDirection;
