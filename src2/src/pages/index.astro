@@ -2,11 +2,13 @@
 import BaseLayout from "../layouts/Base.astro";
 import Hero from "../components/hero.svelte";
 import { Test } from "../../vaul2/test";
+import { LeftPanel} from '../../vaul2/left-panel'
 import { RightPanel } from "../../vaul2/right-panel";
 ---
 
 <BaseLayout title="Vaul Svelte">
 	<Hero client:load />
 	<Test client:load />
+		<LeftPanel client:load client:only="react"/>
 	<RightPanel client:load client:only="react"/>
 </BaseLayout>
