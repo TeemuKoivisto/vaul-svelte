@@ -5,7 +5,7 @@ import type { ContentProps } from "./types";
 import "../../drawer.css";
 
 export const DrawerContent = React.forwardRef<HTMLDivElement, ContentProps>(
-	({ style, children, className, ...props }, ref) => {
+	({ style, children, ...props }, ref) => {
 		const { drawerRef, visible, direction, onPress, onDrag, onRelease, getContentStyle } =
 			useDrawerContext();
 

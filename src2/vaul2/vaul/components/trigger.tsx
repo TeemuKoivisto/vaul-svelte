@@ -21,7 +21,7 @@ export const DrawerTrigger = React.forwardRef<HTMLButtonElement, DrawerTriggerPr
 			},
 			[ref, triggerRef]
 		);
-	
+
 		return (
 			<DialogTrigger ref={combinedRef} asChild={asChild} {...props}>
 				{children}
