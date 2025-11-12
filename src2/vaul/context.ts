@@ -1,5 +1,5 @@
 import React from "react";
-import { DrawerDirection } from "./types";
+import type { DrawerDirection } from "./types";
 
 interface DrawerContextValue {
 	drawerRef: React.RefObject<HTMLDivElement>;

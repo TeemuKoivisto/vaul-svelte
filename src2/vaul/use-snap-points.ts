@@ -2,7 +2,7 @@ import React from "react";
 import { set, isVertical } from "./helpers";
 import { TRANSITIONS, VELOCITY_THRESHOLD } from "./constants";
 import { useControllableState } from "./use-controllable-state";
-import { DrawerDirection } from "./types";
+import type { DrawerDirection } from "./types";
 
 export function useSnapPoints({
 	activeSnapPointProp,

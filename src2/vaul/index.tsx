@@ -18,7 +18,7 @@ import {
 	WINDOW_TOP_OFFSET,
 	DRAG_CLASS,
 } from "./constants";
-import { DrawerDirection } from "./types";
+import type { DrawerDirection } from "./types";
 import { useControllableState } from "./use-controllable-state";
 import { useScaleBackground } from "./use-scale-background";
 import { usePositionFixed } from "./use-position-fixed";

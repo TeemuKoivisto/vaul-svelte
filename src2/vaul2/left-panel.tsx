@@ -14,7 +14,7 @@ export function LeftPanel() {
 				<Drawer.Title>Left panel</Drawer.Title>
 				<Drawer.Overlay className="fixed inset-0 z-10 bg-black/40" />
 				<Drawer.Content
-					className="fixed bottom-0 left-0 z-10 h-full rounded-r-xl"
+					className="fixed bottom-0 left-0 z-10 flex h-full w-80 flex-col rounded-r-xl bg-white"
 					aria-describedby={undefined}
 				>
 					<Drawer.Title>Left panel</Drawer.Title>

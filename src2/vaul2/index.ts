@@ -1,2 +1,2 @@
-export * as Drawer from "./vaul/components/index";
+export * as Drawer from "./lib/components/index";
 export type { DrawerDirection } from "./internal/types";
