@@ -1,10 +1,12 @@
 ---
 import BaseLayout from "../layouts/Base.astro";
 import Hero from "../components/hero.svelte";
+import { Test } from "../../../react/test.tsx";
 ---
 
 <BaseLayout title="Vaul Svelte">
 	<Hero client:load />
+	<Test client:load />
 </BaseLayout>
 
 
