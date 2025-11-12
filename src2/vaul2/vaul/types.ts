@@ -2,7 +2,7 @@ import * as React from "react";
 import type { DrawerDirection } from "../internal/types";
 import type { CreateVaulProps } from "../internal/vaul";
 
-type DrawerContextValue = {
+export type DrawerContextValue = {
 	drawerRef: React.RefObject<HTMLDivElement | null>;
 	overlayRef: React.RefObject<HTMLDivElement | null>;
 	triggerRef: React.RefObject<HTMLButtonElement | null>;
@@ -36,23 +36,3 @@ type DrawerContextValue = {
 		open: boolean
 	) => void;
 };
-
-const DrawerContext = React.createContext<DrawerContextValue | null>(null);
-
-export function useDrawerContext() {
-	const context = React.useContext(DrawerContext);
-	if (!context) {
-		throw new Error("Drawer components must be used within a Drawer.Root");
-	}
-	return context;
-}
-
-export function DrawerProvider({
-	children,
-	value,
-}: {
-	children: React.ReactNode;
-	value: DrawerContextValue;
-}) {
-	return <DrawerContext.Provider value={value}>{children}</DrawerContext.Provider>;
-}

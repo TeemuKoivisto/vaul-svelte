@@ -5,6 +5,10 @@ import { Drawer } from "./index";
 export function RightPanel() {
 	const [expanded, setExpanded] = React.useState(false);
 
+	React.useEffect(() => {
+		console.log("mounted");
+	}, []);
+
 	return (
 		<Drawer.Root
 			direction="right"
@@ -13,7 +17,9 @@ export function RightPanel() {
 			dismissible={true}
 			closeOnOutsideClick={true}
 		>
-			<Drawer.Trigger>OPEN</Drawer.Trigger>
+			<Drawer.Trigger asChild>
+				<button onClick={() => console.log("clicked")}>OPEN</button>
+			</Drawer.Trigger>
 			<Drawer.Portal>
 				<Drawer.Overlay className="fixed inset-0 z-30 bg-black/40" />
 				<Drawer.Content

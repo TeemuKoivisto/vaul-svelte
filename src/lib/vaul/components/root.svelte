@@ -173,8 +173,8 @@
 	}
 
 	:global(
-			[data-vaul-drawer][data-vaul-drawer-visible="true"][data-vaul-drawer-direction="bottom"]
-		) {
+		[data-vaul-drawer][data-vaul-drawer-visible="true"][data-vaul-drawer-direction="bottom"]
+	) {
 		transform: translate3d(0, var(--snap-point-height, 0), 0);
 	}
 
@@ -235,18 +235,18 @@
 	}
 
 	:global(
-			[data-vaul-overlay][data-vaul-snap-points="true"]:not(
-					[data-vaul-snap-points-overlay="true"]
-				):not([data-state="closed"])
-		) {
+		[data-vaul-overlay][data-vaul-snap-points="true"]:not(
+				[data-vaul-snap-points-overlay="true"]
+			):not([data-state="closed"])
+	) {
 		opacity: 0;
 	}
 
 	:global(
-			[data-vaul-overlay][data-vaul-snap-points-overlay="true"]:not(
-					[data-vaul-drawer-visible="false"]
-				)
-		) {
+		[data-vaul-overlay][data-vaul-snap-points-overlay="true"]:not(
+				[data-vaul-drawer-visible="false"]
+			)
+	) {
 		opacity: 1;
 	}
 

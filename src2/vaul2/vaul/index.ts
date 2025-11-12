@@ -1,3 +1,3 @@
 import type { DrawerDirection } from "../internal/types";
-export * as Drawer from "./components/index";
+export * as Drawer from "./components";
 export type { DrawerDirection };
