@@ -32,7 +32,7 @@ export function effect<S extends Stores>(
 	});
 
 	// Automatically unsubscribe the effect when the component is destroyed
-	safeOnDestroy(unsub);
+	// safeOnDestroy(unsub);
 	return unsub;
 }
 
@@ -67,7 +67,7 @@ export function derivedWithUnsubscribe<S extends Stores, T>(
 		return fn($storeValues, onUnsubscribe);
 	});
 
-	safeOnDestroy(unsubscribe);
+	// safeOnDestroy(unsubscribe);
 
 	const subscribe: typeof derivedStore.subscribe = (...args) => {
 		const unsub = derivedStore.subscribe(...args);
@@ -84,20 +84,20 @@ export function derivedWithUnsubscribe<S extends Stores, T>(
 }
 
 // export const safeOnMount = (fn: (...args: unknown[]) => unknown) => {
-//   try {
-//     onMount(fn)
-//   } catch {
-//     return fn()
-//   }
-// }
+// 	try {
+// 		onMount(fn);
+// 	} catch {
+// 		return fn();
+// 	}
+// };
 
 // export const safeOnDestroy = (fn: (...args: unknown[]) => unknown) => {
-//   try {
-//     onDestroy(fn)
-//   } catch {
-//     return fn()
-//   }
-// }
+// 	try {
+// 		onDestroy(fn);
+// 	} catch {
+// 		return fn();
+// 	}
+// };
 
 export type ChangeFn<T> = (args: { curr: T; next: T }) => T;
 

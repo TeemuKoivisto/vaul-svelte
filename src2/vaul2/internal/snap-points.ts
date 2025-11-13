@@ -11,6 +11,7 @@ export function handleSnapPoints({
 	fadeFromIndex,
 	openTime,
 	direction,
+	activeListeners,
 }: {
 	activeSnapPoint: Writable<number | string | null>;
 	snapPoints: Writable<(number | string)[] | undefined>;
@@ -19,6 +20,7 @@ export function handleSnapPoints({
 	overlayRef: Writable<HTMLDivElement | undefined>;
 	openTime: Writable<Date | null>;
 	direction: Writable<DrawerDirection>;
+	activeListeners: Writable<Set<() => void>>;
 }) {
 	const isLastSnapPoint = derived(
 		[snapPoints, activeSnapPoint],
@@ -89,15 +91,25 @@ export function handleSnapPoints({
 			$activeSnapPointIndex !== null ? $snapPointsOffset?.[$activeSnapPointIndex] : null
 	);
 
-	effect([activeSnapPoint, drawerRef], ([$activeSnapPoint, $drawerRef]) => {
-		if ($activeSnapPoint && $drawerRef) {
-			const $snapPoints = snapPoints.get();
-			const $snapPointsOffset = snapPointsOffset.get();
-			const newIndex = $snapPoints?.findIndex((snapPoint) => snapPoint === $activeSnapPoint) ?? -1;
-			if ($snapPointsOffset && newIndex !== -1 && typeof $snapPointsOffset[newIndex] === "number") {
-				snapToPoint($snapPointsOffset[newIndex] as number);
-			}
-		}
+	activeListeners.update((listeners) => {
+		listeners.add(
+			effect([activeSnapPoint, drawerRef], ([$activeSnapPoint, $drawerRef]) => {
+				if ($activeSnapPoint && $drawerRef) {
+					const $snapPoints = snapPoints.get();
+					const $snapPointsOffset = snapPointsOffset.get();
+					const newIndex =
+						$snapPoints?.findIndex((snapPoint) => snapPoint === $activeSnapPoint) ?? -1;
+					if (
+						$snapPointsOffset &&
+						newIndex !== -1 &&
+						typeof $snapPointsOffset[newIndex] === "number"
+					) {
+						snapToPoint($snapPointsOffset[newIndex] as number);
+					}
+				}
+			})
+		);
+		return listeners;
 	});
 
 	function snapToPoint(dimension: number) {

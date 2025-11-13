@@ -3,6 +3,7 @@ import { Dialog } from "@radix-ui/react-dialog";
 import { DrawerProvider } from "../ctx";
 import type { Props } from "./types";
 import type { DrawerDirection } from "../../internal/types";
+import { writable } from "../../svelte-store";
 
 export function DrawerRoot({
 	open: controlledOpen,
@@ -91,6 +92,8 @@ export function DrawerRoot({
 		[onRelease]
 	);
 
+	const activeListeners = React.useMemo(() => writable<Set<() => void>>(new Set()), []);
+
 	const contextValue = {
 		drawerRef,
 		overlayRef,
@@ -107,7 +110,26 @@ export function DrawerRoot({
 		shouldFade: true,
 		keyboardIsOpen,
 		snapPoints: undefined,
+		activeListeners,
 	};
+
+	React.useEffect(() => {
+		return () => {
+			for (const fn of activeListeners.get()) {
+				fn();
+			}
+		};
+	}, []);
+
+	// const vaul = createVaul(props);
+	// const updateOption = getOptionUpdater(vaul.options);
+
+	// setContext(VAUL_ROOT, { ...vaul, updateOption });
+
+	// return {
+	// 	...vaul,
+	// 	updateOption,
+	// };
 
 	return (
 		<Dialog open={open} onOpenChange={handleOpenChange} {...props}>

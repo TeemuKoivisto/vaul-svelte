@@ -1,6 +1,7 @@
 import * as React from "react";
 import type { DrawerDirection } from "../internal/types";
 import type { CreateVaulProps } from "../internal/vaul";
+import type { Writable } from "../svelte-store";
 
 export type DrawerContextValue = {
 	drawerRef: React.RefObject<HTMLDivElement | null>;
@@ -23,6 +24,7 @@ export type DrawerContextValue = {
 	snapPoints?: (number | string)[];
 	shouldFade: boolean;
 	keyboardIsOpen: boolean;
+	activeListeners: Writable<Set<() => void>>;
 	onNestedDrag?: (
 		event: React.PointerEvent<HTMLElement> | React.TouchEvent<HTMLElement>,
 		percentageDragged: number

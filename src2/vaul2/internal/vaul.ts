@@ -1,4 +1,4 @@
-import { derived, writable, type Readable } from "../svelte-store";
+import { derived, Writable, writable, type Readable } from "../svelte-store";
 import type { DrawerDirection, SvelteEvent } from "./types";
 import { handleSnapPoints } from "./snap-points";
 import {
@@ -70,6 +70,7 @@ export type CreateVaulProps = {
 	) => void;
 	modal?: boolean;
 	nested?: boolean;
+	activeListeners: Writable<Set<() => void>>;
 	onClose?: () => void;
 } & (WithFadeFromProps | WithoutFadeFromProps);
 
@@ -101,6 +102,7 @@ const omittedOptions = [
 	"onDrag",
 	"onRelease",
 	"onClose",
+	"activeListeners",
 ] as const;
 
 export function createVaul(props: CreateVaulProps) {
@@ -181,13 +183,14 @@ export function createVaul(props: CreateVaulProps) {
 		fadeFromIndex,
 		overlayRef,
 		openTime,
-		direction,
+		direction,,
+		activeListeners: props.activeListeners
 	});
 
-	const getContentStyle: Readable<(style?: string | null) => string> = derived(
+	const getContentStyle: Readable<(style?: string | null) => string | null> = derived(
 		[snapPointsOffset],
 		([$snapPointsOffset]) => {
-			return (style: string | null = "") => {
+			return (style: string | null = ""): string | null => {
 				if ($snapPointsOffset && $snapPointsOffset.length > 0) {
 					const styleProp = styleToString({
 						"--snap-point-height": `${$snapPointsOffset[0]}px`,
@@ -200,66 +203,12 @@ export function createVaul(props: CreateVaulProps) {
 		}
 	);
 
-	effect([drawerRef], ([$drawerRef]) => {
-		if ($drawerRef) {
-			drawerId.set($drawerRef.id);
-		}
-	});
-
-	effect([isOpen], ([$open]) => {
-		// Prevent double clicks from closing multiple dialogs
-		sleep(100).then(() => {
-			const id = drawerId.get();
-			if ($open && id) {
-				openDrawerIds.update((prev) => {
-					if (prev.includes(id)) {
-						return prev;
-					}
-					prev.push(id);
-					return prev;
-				});
-			} else {
-				openDrawerIds.update((prev) => prev.filter((id) => id !== id));
-			}
-		});
-	});
-
-	effect([isOpen], ([$isOpen]) => {
-		if (!$isOpen && shouldScaleBackground.get()) {
-			const id = setTimeout(() => {
-				reset(document.body, "background");
-			}, 200);
-
-			return () => clearTimeout(id);
-		}
-	});
-
-	// prevent scroll when the drawer is open
-	effect([isOpen], ([$isOpen]) => {
-		let unsub = () => {};
-
-		if ($isOpen) {
-			unsub = preventScroll();
-		}
-
-		return unsub;
-	});
-
-	const { restorePositionSetting } = usePositionFixed({ isOpen, modal, nested, hasBeenOpened });
-
-	// Close the drawer on escape keydown
-	effect([drawerRef], ([$drawerRef]) => {
-		let unsub = noop;
-
-		if ($drawerRef) {
-			unsub = handleEscapeKeydown($drawerRef, () => {
-				closeDrawer(true);
-			});
-		}
-
-		return () => {
-			unsub();
-		};
+	const { restorePositionSetting } = usePositionFixed({
+		isOpen,
+		modal,
+		nested,
+		hasBeenOpened,
+		activeListeners: props.activeListeners,
 	});
 
 	function openDrawer() {
@@ -530,79 +479,6 @@ export function createVaul(props: CreateVaulProps) {
 		}
 	}
 
-	effect(
-		[activeSnapPointIndex, snapPoints, snapPointsOffset],
-		([$activeSnapPointIndex, $snapPoints, $snapPointsOffset]) => {
-			function onVisualViewportChange() {
-				const $drawerRef = drawerRef.get();
-				if (!$drawerRef) return;
-				const $keyboardIsOpen = keyboardIsOpen.get();
-
-				const focusedElement = document.activeElement as HTMLElement;
-				if (isInput(focusedElement) || $keyboardIsOpen) {
-					const visualViewportHeight = window.visualViewport?.height || 0;
-					// This is the height of the keyboard
-					let diffFromInitial = window.innerHeight - visualViewportHeight;
-					const drawerHeight = $drawerRef.getBoundingClientRect().height || 0;
-					if (!initialDrawerHeight) {
-						initialDrawerHeight = drawerHeight;
-					}
-					const offsetFromTop = $drawerRef.getBoundingClientRect().top;
-
-					// visualViewport height may change due to some subtle changes to the keyboard. Checking if the height changed by 60 or more will make sure that they keyboard really changed its open state.
-					if (Math.abs(previousDiffFromInitial - diffFromInitial) > 60) {
-						keyboardIsOpen.set(!$keyboardIsOpen);
-					}
-
-					if ($snapPoints && $snapPoints.length > 0 && $snapPointsOffset && $activeSnapPointIndex) {
-						const activeSnapPointHeight = $snapPointsOffset[$activeSnapPointIndex] || 0;
-						diffFromInitial += activeSnapPointHeight;
-					}
-
-					previousDiffFromInitial = diffFromInitial;
-
-					// We don't have to change the height if the input is in view, when we are here we are in the opened keyboard state so we can correctly check if the input is in view
-					if (drawerHeight > visualViewportHeight || $keyboardIsOpen) {
-						const height = $drawerRef.getBoundingClientRect().height;
-						let newDrawerHeight = height;
-
-						if (height > visualViewportHeight) {
-							newDrawerHeight = visualViewportHeight - WINDOW_TOP_OFFSET;
-						}
-						// When fixed, don't move the drawer upwards if there's space, but rather only change it's height so it's fully scrollable when the keyboard is open
-						if (fixed.get()) {
-							$drawerRef.style.height = `${height - Math.max(diffFromInitial, 0)}px`;
-						} else {
-							$drawerRef.style.height = `${Math.max(
-								newDrawerHeight,
-								visualViewportHeight - offsetFromTop
-							)}px`;
-						}
-					} else {
-						$drawerRef.style.height = `${initialDrawerHeight}px`;
-					}
-
-					if ($snapPoints && $snapPoints.length > 0 && !$keyboardIsOpen) {
-						$drawerRef.style.bottom = `0px`;
-					} else {
-						// Negative bottom value would never make sense
-						$drawerRef.style.bottom = `${Math.max(diffFromInitial, 0)}px`;
-					}
-				}
-			}
-
-			let removeListener = noop;
-
-			if (window.visualViewport) {
-				removeListener = addEventListener(window.visualViewport, "resize", onVisualViewportChange);
-			}
-
-			return () => {
-				removeListener();
-			};
-		}
-	);
-
 	function closeDrawer(withKeyboard: boolean = false) {
 		if (isClosing) return;
 
@@ -644,16 +520,6 @@ export function createVaul(props: CreateVaulProps) {
 			}
 		}, TRANSITIONS.DURATION * 1000); // seconds to ms
 	}
-
-	// This can be done much better
-
-	effect([isOpen], ([$isOpen]) => {
-		if ($isOpen) {
-			hasBeenOpened.set(true);
-		} else {
-			closeDrawer();
-		}
-	});
 
 	function resetDrawer() {
 		const $drawerRef = drawerRef.get();
@@ -778,37 +644,6 @@ export function createVaul(props: CreateVaulProps) {
 		resetDrawer();
 	}
 
-	effect([isOpen], ([$isOpen]) => {
-		// Trigger enter animation without using CSS animation
-		if (!$isOpen) return;
-		if (isBrowser) {
-			set(document.documentElement, {
-				scrollBehavior: "auto",
-			});
-		}
-		openTime.set(new Date());
-		scaleBackground(true, props.backgroundColor);
-	});
-
-	effect([visible], ([$visible]) => {
-		if (!$visible) return;
-
-		// Find all scrollable elements inside our drawer and assign a class to it so that we can disable overflow when dragging to prevent pointermove not being captured
-		const $drawerRef = drawerRef.get();
-		if (!$drawerRef) return;
-
-		const children = $drawerRef.querySelectorAll("*");
-		children.forEach((child: Element) => {
-			const htmlChild = child as HTMLElement;
-			if (
-				htmlChild.scrollHeight > htmlChild.clientHeight ||
-				htmlChild.scrollWidth > htmlChild.clientWidth
-			) {
-				htmlChild.classList.add("vaul-scrollable");
-			}
-		});
-	});
-
 	function onNestedOpenChange(o: boolean) {
 		const $drawerRef = drawerRef.get();
 		const scale = o ? (window.innerWidth - NESTED_DISPLACEMENT) / window.innerWidth : 1;
@@ -875,6 +710,204 @@ export function createVaul(props: CreateVaulProps) {
 			});
 		}
 	}
+
+	props.activeListeners.update((listeners) => {
+		listeners.add(
+			effect([drawerRef], ([$drawerRef]) => {
+				if ($drawerRef) {
+					drawerId.set($drawerRef.id);
+				}
+			})
+		);
+		listeners.add(
+			effect([isOpen], ([$open]) => {
+				// Prevent double clicks from closing multiple dialogs
+				sleep(100).then(() => {
+					const id = drawerId.get();
+					if ($open && id) {
+						openDrawerIds.update((prev) => {
+							if (prev.includes(id)) {
+								return prev;
+							}
+							prev.push(id);
+							return prev;
+						});
+					} else {
+						openDrawerIds.update((prev) => prev.filter((id) => id !== id));
+					}
+				});
+			})
+		);
+		listeners.add(
+			effect([isOpen], ([$isOpen]) => {
+				if (!$isOpen && shouldScaleBackground.get()) {
+					const id = setTimeout(() => {
+						reset(document.body, "background");
+					}, 200);
+
+					return () => clearTimeout(id);
+				}
+			})
+		);
+		listeners.add(
+			// prevent scroll when the drawer is open
+			effect([isOpen], ([$isOpen]) => {
+				let unsub = () => {};
+
+				if ($isOpen) {
+					unsub = preventScroll();
+				}
+
+				return unsub;
+			})
+		);
+		listeners.add(
+			// Close the drawer on escape keydown
+			effect([drawerRef], ([$drawerRef]) => {
+				let unsub = noop;
+
+				if ($drawerRef) {
+					unsub = handleEscapeKeydown($drawerRef, () => {
+						closeDrawer(true);
+					});
+				}
+
+				return () => {
+					unsub();
+				};
+			})
+		);
+		listeners.add(
+			effect(
+				[activeSnapPointIndex, snapPoints, snapPointsOffset],
+				([$activeSnapPointIndex, $snapPoints, $snapPointsOffset]) => {
+					function onVisualViewportChange() {
+						const $drawerRef = drawerRef.get();
+						if (!$drawerRef) return;
+						const $keyboardIsOpen = keyboardIsOpen.get();
+
+						const focusedElement = document.activeElement as HTMLElement;
+						if (isInput(focusedElement) || $keyboardIsOpen) {
+							const visualViewportHeight = window.visualViewport?.height || 0;
+							// This is the height of the keyboard
+							let diffFromInitial = window.innerHeight - visualViewportHeight;
+							const drawerHeight = $drawerRef.getBoundingClientRect().height || 0;
+							if (!initialDrawerHeight) {
+								initialDrawerHeight = drawerHeight;
+							}
+							const offsetFromTop = $drawerRef.getBoundingClientRect().top;
+
+							// visualViewport height may change due to some subtle changes to the keyboard. Checking if the height changed by 60 or more will make sure that they keyboard really changed its open state.
+							if (Math.abs(previousDiffFromInitial - diffFromInitial) > 60) {
+								keyboardIsOpen.set(!$keyboardIsOpen);
+							}
+
+							if (
+								$snapPoints &&
+								$snapPoints.length > 0 &&
+								$snapPointsOffset &&
+								$activeSnapPointIndex
+							) {
+								const activeSnapPointHeight = $snapPointsOffset[$activeSnapPointIndex] || 0;
+								diffFromInitial += activeSnapPointHeight;
+							}
+
+							previousDiffFromInitial = diffFromInitial;
+
+							// We don't have to change the height if the input is in view, when we are here we are in the opened keyboard state so we can correctly check if the input is in view
+							if (drawerHeight > visualViewportHeight || $keyboardIsOpen) {
+								const height = $drawerRef.getBoundingClientRect().height;
+								let newDrawerHeight = height;
+
+								if (height > visualViewportHeight) {
+									newDrawerHeight = visualViewportHeight - WINDOW_TOP_OFFSET;
+								}
+								// When fixed, don't move the drawer upwards if there's space, but rather only change it's height so it's fully scrollable when the keyboard is open
+								if (fixed.get()) {
+									$drawerRef.style.height = `${height - Math.max(diffFromInitial, 0)}px`;
+								} else {
+									$drawerRef.style.height = `${Math.max(
+										newDrawerHeight,
+										visualViewportHeight - offsetFromTop
+									)}px`;
+								}
+							} else {
+								$drawerRef.style.height = `${initialDrawerHeight}px`;
+							}
+
+							if ($snapPoints && $snapPoints.length > 0 && !$keyboardIsOpen) {
+								$drawerRef.style.bottom = `0px`;
+							} else {
+								// Negative bottom value would never make sense
+								$drawerRef.style.bottom = `${Math.max(diffFromInitial, 0)}px`;
+							}
+						}
+					}
+
+					let removeListener = noop;
+
+					if (window.visualViewport) {
+						removeListener = addEventListener(
+							window.visualViewport,
+							"resize",
+							onVisualViewportChange
+						);
+					}
+
+					return () => {
+						removeListener();
+					};
+				}
+			)
+		);
+		listeners.add(
+			// This can be done much better
+			effect([isOpen], ([$isOpen]) => {
+				if ($isOpen) {
+					hasBeenOpened.set(true);
+				} else {
+					closeDrawer();
+				}
+			})
+		);
+
+		listeners.add(
+			effect([isOpen], ([$isOpen]) => {
+				// Trigger enter animation without using CSS animation
+				if (!$isOpen) return;
+				if (isBrowser) {
+					set(document.documentElement, {
+						scrollBehavior: "auto",
+					});
+				}
+				openTime.set(new Date());
+				scaleBackground(true, props.backgroundColor);
+			})
+		);
+
+		listeners.add(
+			effect([visible], ([$visible]) => {
+				if (!$visible) return;
+
+				// Find all scrollable elements inside our drawer and assign a class to it so that we can disable overflow when dragging to prevent pointermove not being captured
+				const $drawerRef = drawerRef.get();
+				if (!$drawerRef) return;
+
+				const children = $drawerRef.querySelectorAll("*");
+				children.forEach((child: Element) => {
+					const htmlChild = child as HTMLElement;
+					if (
+						htmlChild.scrollHeight > htmlChild.clientHeight ||
+						htmlChild.scrollWidth > htmlChild.clientWidth
+					) {
+						htmlChild.classList.add("vaul-scrollable");
+					}
+				});
+			})
+		);
+
+		return listeners;
+	});
 
 	return {
 		states: {

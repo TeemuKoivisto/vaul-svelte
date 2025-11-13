@@ -1,16 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import { addEventListener } from "./helpers/index";
+import type { Writable } from "../svelte-store";
 
 export function usePositionFixed({
 	isOpen,
 	modal,
 	nested,
 	hasBeenOpened,
+	activeListeners,
 }: {
-	isOpen: boolean;
-	modal: boolean;
-	nested: boolean;
-	hasBeenOpened: boolean;
+	isOpen: Writable<boolean>;
+	modal: Writable<boolean>;
+	nested: Writable<boolean>;
+	hasBeenOpened: Writable<boolean>;
+	activeListeners: Writable<Set<() => void>>;
 }) {
 	const previousBodyPositionRef = useRef<Record<string, string> | null>(null);
 	const scrollPosRef = useRef(0);
@@ -80,6 +83,10 @@ export function usePositionFixed({
 
 		previousBodyPositionRef.current = null;
 	}
+
+	activeListeners.update((listeners) => {
+		return listeners;
+	});
 
 	// Track scroll position
 	useEffect(() => {
