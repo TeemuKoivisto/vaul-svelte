@@ -1,9 +1,8 @@
 import { createContext, useContext } from "react";
 import { createVaul } from "../internal/vaul";
-// import type { DrawerContextValue } from "./types";
 
 export type DrawerContextValue = ReturnType<typeof createVaul>;
-const DrawerContext = createContext<DrawerContextValue | null>(null);
+export const DrawerContext = createContext<DrawerContextValue | null>(null);
 
 export function useDrawerContext() {
 	const context = useContext(DrawerContext);
@@ -11,8 +10,4 @@ export function useDrawerContext() {
 		throw new Error("Drawer components must be used within a Drawer.Root");
 	}
 	return context;
-}
-
-export function DrawerProvider({ children, value }: { children: any; value: DrawerContextValue }) {
-	return <DrawerContext.Provider value={value}>{children}</DrawerContext.Provider>;
 }
