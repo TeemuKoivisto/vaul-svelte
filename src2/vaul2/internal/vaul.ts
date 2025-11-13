@@ -22,7 +22,7 @@ import {
 import { isIOS, preventScroll } from "./prevent-scroll";
 import { TRANSITIONS, VELOCITY_THRESHOLD } from "./constants";
 import { handleEscapeKeydown } from "./escape-keydown";
-import { usePositionFixed } from "./position-fixed";
+import { handlePositionFixed } from "./position-fixed";
 
 const CLOSE_THRESHOLD = 0.25;
 
@@ -183,8 +183,8 @@ export function createVaul(props: CreateVaulProps) {
 		fadeFromIndex,
 		overlayRef,
 		openTime,
-		direction,,
-		activeListeners: props.activeListeners
+		direction,
+		activeListeners: props.activeListeners,
 	});
 
 	const getContentStyle: Readable<(style?: string | null) => string | null> = derived(
@@ -203,7 +203,7 @@ export function createVaul(props: CreateVaulProps) {
 		}
 	);
 
-	const { restorePositionSetting } = usePositionFixed({
+	const { restorePositionSetting } = handlePositionFixed({
 		isOpen,
 		modal,
 		nested,

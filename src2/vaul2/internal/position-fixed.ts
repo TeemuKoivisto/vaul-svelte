@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from "react";
-import { addEventListener } from "./helpers/index";
-import type { Writable } from "../svelte-store";
+import { addEventListener, effect, noop } from "./helpers/index";
+import { writable, type Writable } from "../svelte-store";
 
-export function usePositionFixed({
+export function handlePositionFixed({
 	isOpen,
 	modal,
 	nested,
@@ -15,17 +14,15 @@ export function usePositionFixed({
 	hasBeenOpened: Writable<boolean>;
 	activeListeners: Writable<Set<() => void>>;
 }) {
-	const previousBodyPositionRef = useRef<Record<string, string> | null>(null);
-	const scrollPosRef = useRef(0);
-	const [activeUrl, setActiveUrl] = useState(
-		typeof window !== "undefined" ? window.location.href : ""
-	);
+	let previousBodyPositionRef: Record<string, string> | null = null;
+	let scrollPosRef = 0;
+	const activeUrl = writable(typeof window !== "undefined" ? window.location.href : "");
 
 	function setPositionFixed(open: boolean) {
 		// If previousBodyPosition is already set, don't set it again.
-		if (!(previousBodyPositionRef.current === null && open)) return;
+		if (!(previousBodyPositionRef === null && open)) return;
 
-		previousBodyPositionRef.current = {
+		previousBodyPositionRef = {
 			position: document.body.style.position,
 			top: document.body.style.top,
 			left: document.body.style.left,
@@ -34,7 +31,7 @@ export function usePositionFixed({
 
 		// Update the dom inside an animation frame
 		const { scrollX, innerHeight } = window;
-		const scrollPos = scrollPosRef.current;
+		const scrollPos = scrollPosRef;
 
 		document.body.style.setProperty("position", "fixed", "important");
 		document.body.style.top = `${-scrollPos}px`;
@@ -57,9 +54,9 @@ export function usePositionFixed({
 	}
 
 	function restorePositionSetting() {
-		if (previousBodyPositionRef.current === null) return;
-		const currentActiveUrl = activeUrl;
-		const previousBodyPosition = previousBodyPositionRef.current;
+		if (previousBodyPositionRef === null) return;
+		const currentActiveUrl = activeUrl.get();
+		const previousBodyPosition = previousBodyPositionRef;
 
 		// Convert the position from "px" to Int
 		const y = -parseInt(document.body.style.top, 10);
@@ -74,70 +71,72 @@ export function usePositionFixed({
 
 		requestAnimationFrame(() => {
 			if (currentActiveUrl !== window.location.href) {
-				setActiveUrl(window.location.href);
+				activeUrl.set(window.location.href);
 				return;
 			}
 
 			window.scrollTo(x, y);
 		});
 
-		previousBodyPositionRef.current = null;
+		previousBodyPositionRef = null;
 	}
 
 	activeListeners.update((listeners) => {
+		listeners.add(() => {
+			// Track scroll position
+
+			function onScroll() {
+				scrollPosRef = window.scrollY;
+			}
+
+			onScroll();
+
+			return addEventListener(window, "scroll", onScroll);
+		});
+
+		listeners.add(() => {
+			// Update activeUrl when location changes
+
+			if (typeof window === "undefined") return;
+
+			const handleLocationChange = () => {
+				activeUrl.set(window.location.href);
+			};
+
+			// Listen for popstate events (back/forward navigation)
+			return addEventListener(window, "popstate", handleLocationChange);
+		});
+
+		listeners.add(
+			// Handle position fixed based on isOpen state
+			effect(
+				// @TODO is activeUrl needed? not read here
+				[isOpen, modal, nested, hasBeenOpened, activeUrl],
+				([$isOpen, $modal, $nested, $hasBeenOpened]) => {
+					if (typeof document === "undefined") return noop;
+					if ($nested || !$hasBeenOpened) return noop;
+
+					// This is needed to force Safari toolbar to show **before** the drawer starts animating to prevent a gnarly shift from happening
+					// Force Safari toolbar to show before animating to prevent layout shift
+					if ($isOpen) {
+						setPositionFixed($isOpen);
+
+						if (!$modal) {
+							const timeoutId = setTimeout(() => {
+								restorePositionSetting();
+							}, 500);
+							return () => clearTimeout(timeoutId);
+						}
+					} else {
+						restorePositionSetting();
+					}
+					return noop;
+				}
+			)
+		);
+
 		return listeners;
 	});
-
-	// Track scroll position
-	useEffect(() => {
-		function onScroll() {
-			scrollPosRef.current = window.scrollY;
-		}
-
-		onScroll();
-
-		const removeListener = addEventListener(window, "scroll", onScroll);
-
-		return () => {
-			removeListener();
-		};
-	}, []);
-
-	// Handle position fixed based on isOpen state
-	useEffect(() => {
-		if (typeof document === "undefined") return;
-		if (nested || !hasBeenOpened) return;
-
-		// This is needed to force Safari toolbar to show **before** the drawer starts animating to prevent a gnarly shift from happening
-		if (isOpen) {
-			setPositionFixed(isOpen);
-
-			if (!modal) {
-				const timeoutId = setTimeout(() => {
-					restorePositionSetting();
-				}, 500);
-				return () => clearTimeout(timeoutId);
-			}
-		} else {
-			restorePositionSetting();
-		}
-	}, [isOpen, modal, nested, hasBeenOpened, activeUrl]);
-
-	// Update activeUrl when location changes
-	useEffect(() => {
-		if (typeof window === "undefined") return;
-
-		const handleLocationChange = () => {
-			setActiveUrl(window.location.href);
-		};
-
-		// Listen for popstate events (back/forward navigation)
-		const removeListener = addEventListener(window, "popstate", handleLocationChange);
-
-		return () => {
-			removeListener();
-		};
-	}, []);
 
 	return { restorePositionSetting };
 }
