@@ -56,13 +56,16 @@ export function DrawerRoot({
 	const extendedProps = React.useMemo(
 		() => ({
 			...props,
+			// Ensure internal engine receives the correct direction and options
+			direction,
+			dismissible,
 			fadeFromIndex: props.fadeFromIndex === undefined ? (undefined as never) : props.fadeFromIndex,
 			snapPoints: snapPoints as any,
 			onOpenChange: handleOpenChange,
 			onActiveSnapPointChange: handleActiveSnapPointChange,
 			activeListeners,
 		}),
-		[props]
+		[props, direction, dismissible, snapPoints, activeSnapPoint]
 	);
 
 	const vaul = createVaul(extendedProps);
@@ -90,12 +93,22 @@ export function DrawerRoot({
 			open={open}
 			onOpenChange={(o) => {
 				onOpenChange?.(o);
+				// Keep internal state in sync for uncontrolled usage
+				setInternalOpen(o);
 				if (!o) {
 					vaul.methods.closeDrawer();
 				} else if (o) {
 					vaul.methods.openDrawer();
 				}
 			}}
+			// onInteractOutside={(e) => {
+			// 	// Surface outside-click to consumer and optionally prevent close
+			// 	// @ts-expect-error: Radix event type
+			// 	onOutsideClick?.(e);
+			// 	if (!closeOnOutsideClick) {
+			// 		e.preventDefault();
+			// 	}
+			// }}
 			{...props}
 		>
 			<DrawerContext.Provider value={vaul}>{children}</DrawerContext.Provider>
