@@ -1,12 +1,20 @@
 import * as React from "react";
 import { DialogOverlay } from "@radix-ui/react-dialog";
+
 import { useDrawerContext } from "../ctx";
+import { useStore } from "../use-store";
+
 import type { OverlayProps } from "./types";
+
 import "../../drawer.css";
 
 export const DrawerOverlay = React.forwardRef<HTMLDivElement, OverlayProps>(
 	({ className, ...props }, ref) => {
-		const { overlayRef, visible, isOpen, snapPoints, onRelease } = useDrawerContext();
+		const vaul = useDrawerContext();
+		const isOpen = useStore(vaul.states.isOpen);
+		const visible = useStore(vaul.states.visible);
+		const snapPoints = useStore(vaul.states.snapPoints);
+		const shouldFade = useStore(vaul.states.shouldFade);
 
 		const combinedRef = React.useCallback(
 			(node: HTMLDivElement | null) => {
@@ -15,12 +23,12 @@ export const DrawerOverlay = React.forwardRef<HTMLDivElement, OverlayProps>(
 				} else if (ref) {
 					(ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
 				}
-				(overlayRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+				vaul.refs.overlayRef.set(node ?? undefined);
 			},
-			[ref, overlayRef]
+			[ref, vaul.refs.overlayRef]
 		);
 
-		const hasSnapPoints = snapPoints && snapPoints.length > 0;
+		const hasSnapPoints = !!(snapPoints && snapPoints.length > 0);
 
 		return (
 			<DialogOverlay
@@ -29,8 +37,8 @@ export const DrawerOverlay = React.forwardRef<HTMLDivElement, OverlayProps>(
 				data-vaul-drawer-visible={visible ? "true" : "false"}
 				data-vaul-overlay=""
 				data-vaul-snap-points={isOpen && hasSnapPoints ? "true" : "false"}
-				data-vaul-snap-points-overlay={isOpen && visible ? "true" : "false"}
-				onMouseUp={onRelease}
+				data-vaul-snap-points-overlay={isOpen && shouldFade ? "true" : "false"}
+				onMouseUp={vaul.methods.onRelease}
 				{...props}
 			/>
 		);

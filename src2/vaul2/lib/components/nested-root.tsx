@@ -16,7 +16,9 @@ export function DrawerNestedRoot({
 	children,
 	...props
 }: DrawerNestedRootProps) {
-	const { onNestedDrag, onNestedOpenChange, onNestedRelease } = useDrawerContext();
+	const {
+		methods: { onNestedDrag, onNestedOpenChange, onNestedRelease },
+	} = useDrawerContext();
 
 	if (!onNestedDrag || !onNestedOpenChange || !onNestedRelease) {
 		throw new Error("NestedRoot must be a child of a Root");

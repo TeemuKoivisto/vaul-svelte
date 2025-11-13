@@ -8,7 +8,7 @@ export interface DrawerTriggerProps extends React.ComponentPropsWithoutRef<typeo
 
 export const DrawerTrigger = React.forwardRef<HTMLButtonElement, DrawerTriggerProps>(
 	({ asChild, children, ...props }, ref) => {
-		const { triggerRef } = useDrawerContext();
+		const vaul = useDrawerContext();
 
 		const combinedRef = React.useCallback(
 			(node: HTMLButtonElement | null) => {
@@ -17,9 +17,9 @@ export const DrawerTrigger = React.forwardRef<HTMLButtonElement, DrawerTriggerPr
 				} else if (ref) {
 					(ref as React.MutableRefObject<HTMLButtonElement | null>).current = node;
 				}
-				(triggerRef as React.MutableRefObject<HTMLButtonElement | null>).current = node;
+				vaul.refs.triggerRef.set(node ?? undefined);
 			},
-			[ref, triggerRef]
+			[ref]
 		);
 
 		return (

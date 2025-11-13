@@ -5,24 +5,24 @@ import type { CloseProps } from "./types";
 
 export const DrawerClose = React.forwardRef<HTMLButtonElement, CloseProps>(
 	({ asChild, children, ...props }, ref) => {
-		const { closeDrawer } = useDrawerContext();
+		const { methods } = useDrawerContext();
 
 		const handleClick = React.useCallback(
 			(e: React.MouseEvent<HTMLButtonElement>) => {
 				e.preventDefault();
-				closeDrawer();
+				methods.closeDrawer();
 			},
-			[closeDrawer]
+			[methods.closeDrawer]
 		);
 
 		const handleKeyDown = React.useCallback(
 			(e: React.KeyboardEvent<HTMLButtonElement>) => {
 				if (e.key === "Enter" || e.key === " ") {
 					e.preventDefault();
-					closeDrawer(true);
+					methods.closeDrawer(true);
 				}
 			},
-			[closeDrawer]
+			[methods.closeDrawer]
 		);
 
 		return (
