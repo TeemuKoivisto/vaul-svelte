@@ -95,10 +95,10 @@ export function DrawerRoot({
 				onOpenChange?.(o);
 				// Keep internal state in sync for uncontrolled usage
 				setInternalOpen(o);
-				if (!o) {
-					vaul.methods.closeDrawer();
-				} else if (o) {
+				if (o) {
 					vaul.methods.openDrawer();
+				} else {
+					vaul.methods.closeDrawer();
 				}
 			}}
 			// onInteractOutside={(e) => {

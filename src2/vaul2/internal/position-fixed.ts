@@ -1,6 +1,9 @@
 import { addEventListener, effect, noop } from "./helpers/index";
 import { writable, type Writable } from "../svelte-store";
 
+// @TODO what is this madness? global state??
+let previousBodyPositionRef: Record<string, string> | null = null;
+
 export function handlePositionFixed({
 	isOpen,
 	modal,
@@ -14,7 +17,6 @@ export function handlePositionFixed({
 	hasBeenOpened: Writable<boolean>;
 	activeListeners: Writable<Set<() => void>>;
 }) {
-	let previousBodyPositionRef: Record<string, string> | null = null;
 	let scrollPosRef = 0;
 	const activeUrl = writable(typeof window !== "undefined" ? window.location.href : "");
 
@@ -84,25 +86,19 @@ export function handlePositionFixed({
 	activeListeners.update((listeners) => {
 		listeners.add(() => {
 			// Track scroll position
-
 			function onScroll() {
 				scrollPosRef = window.scrollY;
 			}
-
 			onScroll();
-
 			return addEventListener(window, "scroll", onScroll);
 		});
 
 		listeners.add(() => {
 			// Update activeUrl when location changes
-
 			if (typeof window === "undefined") return;
-
 			const handleLocationChange = () => {
 				activeUrl.set(window.location.href);
 			};
-
 			// Listen for popstate events (back/forward navigation)
 			return addEventListener(window, "popstate", handleLocationChange);
 		});

@@ -11,17 +11,17 @@ export type GeneralEventListener<E = Event> = (evt: E) => unknown;
 /**
  *  Overloaded function signatures for addEventListener
  */
-export function addEventListener<E extends keyof HTMLElementEventMap>(
+export function addEventListener<E extends keyof WindowEventMap>(
 	target: Window,
 	event: E,
-	handler: (this: Window, ev: HTMLElementEventMap[E]) => unknown,
+	handler: (this: Window, ev: WindowEventMap[E]) => unknown,
 	options?: boolean | AddEventListenerOptions
 ): VoidFunction;
 
-export function addEventListener<E extends keyof HTMLElementEventMap>(
+export function addEventListener<E extends keyof DocumentEventMap>(
 	target: Document,
 	event: E,
-	handler: (this: Document, ev: HTMLElementEventMap[E]) => unknown,
+	handler: (this: Document, ev: DocumentEventMap[E]) => unknown,
 	options?: boolean | AddEventListenerOptions
 ): VoidFunction;
 

@@ -73,6 +73,7 @@ export const DrawerContent = React.forwardRef<HTMLDivElement, ContentProps>(
 			<DialogPrimitive.Portal>
 				<DialogPrimitive.Content
 					ref={combinedRef}
+					// @TODO this is broken but not used so wont error
 					style={getContentStyle((style as unknown as string) ?? "") as React.CSSProperties}
 					data-vaul-drawer=""
 					data-vaul-drawer-direction={direction}

@@ -9,6 +9,7 @@ export interface DrawerNestedRootProps extends Omit<Props, "nested"> {
 	open?: Props["open"];
 }
 
+// Almost identical to original vault DrawerNestedRoot
 export function DrawerNestedRoot({
 	onDrag,
 	onOpenChange,

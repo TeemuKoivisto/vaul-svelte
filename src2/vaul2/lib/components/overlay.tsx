@@ -28,7 +28,7 @@ export const DrawerOverlay = React.forwardRef<HTMLDivElement, OverlayProps>(
 			[ref, vaul.refs.overlayRef]
 		);
 
-		const hasSnapPoints = !!(snapPoints && snapPoints.length > 0);
+		const hasSnapPoints = snapPoints && snapPoints.length > 0;
 
 		return (
 			<DialogOverlay

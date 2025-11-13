@@ -19,7 +19,7 @@ export const DrawerTrigger = React.forwardRef<HTMLButtonElement, DrawerTriggerPr
 				}
 				vaul.refs.triggerRef.set(node ?? undefined);
 			},
-			[ref]
+			[ref, vaul.refs.triggerRef]
 		);
 
 		return (

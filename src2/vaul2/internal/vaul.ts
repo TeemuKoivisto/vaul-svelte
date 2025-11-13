@@ -1,11 +1,5 @@
 import { derived, writable, type Readable } from "../svelte-store";
-import type {
-	CreateVaulProps,
-	DragEvent,
-	DrawerDirection,
-	PressEvent,
-	ReleaseEvent,
-} from "./types";
+import type { CreateVaulProps, DrawerDirection } from "./types";
 import { handleSnapPoints } from "./snap-points";
 import {
 	overridable,
@@ -134,7 +128,7 @@ export function createVaul(props: CreateVaulProps) {
 	let nestedOpenChangeTimer: NodeJS.Timeout | null = null;
 
 	const activeSnapPoint = overridable(
-		writable(withDefaults.defaultActiveSnapPoint),
+		writable(withDefaults.defaultActiveSnapPoint || null),
 		withDefaults.onActiveSnapPointChange
 	);
 
@@ -186,7 +180,7 @@ export function createVaul(props: CreateVaulProps) {
 		isOpen.set(true);
 	}
 
-	function onPress(event: PressEvent) {
+	function onPress(event: React.PointerEvent<HTMLElement>) {
 		const $drawerRef = drawerRef.get();
 
 		if (!dismissible.get() && !snapPoints.get()) return;
@@ -284,7 +278,7 @@ export function createVaul(props: CreateVaulProps) {
 		return true;
 	}
 
-	function onDrag(event: DragEvent) {
+	function onDrag(event: React.PointerEvent<HTMLElement> | React.TouchEvent<HTMLElement>) {
 		const $drawerRef = drawerRef.get();
 		if (!$drawerRef || !isDragging) return;
 		// We need to know how much of the drawer has been dragged in percentages so that we can transform background accordingly
@@ -536,7 +530,12 @@ export function createVaul(props: CreateVaulProps) {
 		}
 	}
 
-	function onRelease(event: ReleaseEvent) {
+	function onRelease(
+		event:
+			| React.MouseEvent<HTMLElement>
+			| React.PointerEvent<HTMLElement>
+			| React.TouchEvent<HTMLElement>
+	) {
 		const $drawerRef = drawerRef.get();
 		if (!isDragging || !$drawerRef) return;
 
@@ -641,7 +640,13 @@ export function createVaul(props: CreateVaulProps) {
 		}
 	}
 
-	function onNestedDrag(_: DragEvent, percentageDragged: number) {
+	function onNestedDrag(
+		_:
+			| React.MouseEvent<HTMLElement>
+			| React.PointerEvent<HTMLElement>
+			| React.TouchEvent<HTMLElement>,
+		percentageDragged: number
+	) {
 		if (percentageDragged < 0) return;
 		const initialScale = (window.innerWidth - NESTED_DISPLACEMENT) / window.innerWidth;
 		const newScale = initialScale + percentageDragged * (1 - initialScale);
@@ -656,7 +661,13 @@ export function createVaul(props: CreateVaulProps) {
 		});
 	}
 
-	function onNestedRelease(_: ReleaseEvent, o: boolean) {
+	function onNestedRelease(
+		_:
+			| React.MouseEvent<HTMLElement>
+			| React.PointerEvent<HTMLElement>
+			| React.TouchEvent<HTMLElement>,
+		o: boolean
+	) {
 		const $direction = direction.get();
 		const dim = isVertical($direction) ? window.innerHeight : window.innerWidth;
 		const scale = o ? (dim - NESTED_DISPLACEMENT) / dim : 1;
@@ -921,7 +932,10 @@ function getScale() {
 function getDistanceMoved(
 	pointerStart: number,
 	direction: DrawerDirection,
-	event: DragEvent | ReleaseEvent
+	event:
+		| React.MouseEvent<HTMLElement>
+		| React.PointerEvent<HTMLElement>
+		| React.TouchEvent<HTMLElement>
 ) {
 	if (event.type.startsWith("touch")) {
 		return getDistanceMovedForTouch(
