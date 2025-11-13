@@ -1,9 +1,12 @@
 import * as React from "react";
 import { Dialog } from "@radix-ui/react-dialog";
+
+import { writable } from "../../svelte-store";
+import { createVaul } from "../../internal/vaul";
 import { DrawerProvider } from "../ctx";
+
 import type { Props } from "./types";
 import type { DrawerDirection } from "../../internal/types";
-import { writable } from "../../svelte-store";
 
 export function DrawerRoot({
 	open: controlledOpen,
@@ -121,7 +124,7 @@ export function DrawerRoot({
 		};
 	}, []);
 
-	// const vaul = createVaul(props);
+	const vaul = createVaul(contextValue);
 	// const updateOption = getOptionUpdater(vaul.options);
 
 	// setContext(VAUL_ROOT, { ...vaul, updateOption });
@@ -133,7 +136,7 @@ export function DrawerRoot({
 
 	return (
 		<Dialog open={open} onOpenChange={handleOpenChange} {...props}>
-			<DrawerProvider value={contextValue}>{children}</DrawerProvider>
+			<DrawerProvider value={vaul}>{children}</DrawerProvider>
 		</Dialog>
 	);
 }

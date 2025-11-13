@@ -1,11 +1,16 @@
-import { derived, Writable, writable, type Readable } from "../svelte-store";
-import type { DrawerDirection, SvelteEvent } from "./types";
+import { derived, writable, type Readable } from "../svelte-store";
+import type {
+	CreateVaulProps,
+	DragEvent,
+	DrawerDirection,
+	PressEvent,
+	ReleaseEvent,
+} from "./types";
 import { handleSnapPoints } from "./snap-points";
 import {
 	overridable,
 	toWritableStores,
 	omit,
-	type ChangeFn,
 	getTranslate,
 	isVertical,
 	set,
@@ -37,42 +42,6 @@ const WINDOW_TOP_OFFSET = 26;
 const DRAG_CLASS = "vaul-dragging";
 
 const openDrawerIds = writable<string[]>([]);
-
-type WithFadeFromProps = {
-	snapPoints: (number | string)[];
-	fadeFromIndex: number;
-};
-
-type WithoutFadeFromProps = {
-	snapPoints?: (number | string)[];
-	fadeFromIndex?: never;
-};
-
-export type CreateVaulProps = {
-	defaultActiveSnapPoint?: number | string | null;
-	onActiveSnapPointChange?: ChangeFn<number | string | null>;
-	defaultOpen?: boolean;
-	onOpenChange?: ChangeFn<boolean>;
-	closeThreshold?: number;
-	shouldScaleBackground?: boolean;
-	backgroundColor?: string;
-	scrollLockTimeout?: number;
-	fixed?: boolean;
-	dismissible?: boolean;
-	direction?: DrawerDirection;
-	onDrag?: (
-		event: SvelteEvent<PointerEvent | TouchEvent, HTMLElement>,
-		percentageDragged: number
-	) => void;
-	onRelease?: (
-		event: SvelteEvent<PointerEvent | MouseEvent | TouchEvent, HTMLElement>,
-		open: boolean
-	) => void;
-	modal?: boolean;
-	nested?: boolean;
-	activeListeners: Writable<Set<() => void>>;
-	onClose?: () => void;
-} & (WithFadeFromProps | WithoutFadeFromProps);
 
 const defaultProps = {
 	closeThreshold: CLOSE_THRESHOLD,
@@ -217,7 +186,7 @@ export function createVaul(props: CreateVaulProps) {
 		isOpen.set(true);
 	}
 
-	function onPress(event: SvelteEvent<PointerEvent, HTMLElement>) {
+	function onPress(event: PressEvent) {
 		const $drawerRef = drawerRef.get();
 
 		if (!dismissible.get() && !snapPoints.get()) return;
@@ -315,7 +284,7 @@ export function createVaul(props: CreateVaulProps) {
 		return true;
 	}
 
-	function onDrag(event: SvelteEvent<PointerEvent | TouchEvent, HTMLElement>) {
+	function onDrag(event: DragEvent) {
 		const $drawerRef = drawerRef.get();
 		if (!$drawerRef || !isDragging) return;
 		// We need to know how much of the drawer has been dragged in percentages so that we can transform background accordingly
@@ -567,7 +536,7 @@ export function createVaul(props: CreateVaulProps) {
 		}
 	}
 
-	function onRelease(event: SvelteEvent<PointerEvent | MouseEvent | TouchEvent, HTMLElement>) {
+	function onRelease(event: ReleaseEvent) {
 		const $drawerRef = drawerRef.get();
 		if (!isDragging || !$drawerRef) return;
 
@@ -672,10 +641,7 @@ export function createVaul(props: CreateVaulProps) {
 		}
 	}
 
-	function onNestedDrag(
-		_: SvelteEvent<PointerEvent | MouseEvent | TouchEvent, HTMLElement>,
-		percentageDragged: number
-	) {
+	function onNestedDrag(_: DragEvent, percentageDragged: number) {
 		if (percentageDragged < 0) return;
 		const initialScale = (window.innerWidth - NESTED_DISPLACEMENT) / window.innerWidth;
 		const newScale = initialScale + percentageDragged * (1 - initialScale);
@@ -690,10 +656,7 @@ export function createVaul(props: CreateVaulProps) {
 		});
 	}
 
-	function onNestedRelease(
-		_: SvelteEvent<PointerEvent | MouseEvent | TouchEvent, HTMLElement>,
-		o: boolean
-	) {
+	function onNestedRelease(_: ReleaseEvent, o: boolean) {
 		const $direction = direction.get();
 		const dim = isVertical($direction) ? window.innerHeight : window.innerWidth;
 		const scale = o ? (dim - NESTED_DISPLACEMENT) / dim : 1;
@@ -958,19 +921,27 @@ function getScale() {
 function getDistanceMoved(
 	pointerStart: number,
 	direction: DrawerDirection,
-	event: SvelteEvent<PointerEvent | MouseEvent | TouchEvent, HTMLElement>
+	event: DragEvent | ReleaseEvent
 ) {
 	if (event.type.startsWith("touch")) {
-		return getDistanceMovedForTouch(pointerStart, direction, event as TouchEvent);
+		return getDistanceMovedForTouch(
+			pointerStart,
+			direction,
+			event as React.TouchEvent<HTMLElement>
+		);
 	} else {
-		return getDistanceMovedForPointer(pointerStart, direction, event as PointerEvent);
+		return getDistanceMovedForPointer(
+			pointerStart,
+			direction,
+			event as React.MouseEvent<HTMLElement> | React.PointerEvent<HTMLElement>
+		);
 	}
 }
 
 function getDistanceMovedForPointer(
 	pointerStart: number,
 	direction: DrawerDirection,
-	event: PointerEvent | MouseEvent
+	event: React.MouseEvent<HTMLElement> | React.PointerEvent<HTMLElement>
 ) {
 	return pointerStart - (isVertical(direction) ? event.screenY : event.screenX);
 }
@@ -978,7 +949,7 @@ function getDistanceMovedForPointer(
 function getDistanceMovedForTouch(
 	pointerStart: number,
 	direction: DrawerDirection,
-	event: TouchEvent
+	event: React.TouchEvent<HTMLElement>
 ) {
 	return (
 		pointerStart -

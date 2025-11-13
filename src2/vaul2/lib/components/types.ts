@@ -1,12 +1,13 @@
 import type { ComponentPropsWithoutRef } from "react";
 import type {
+	DialogProps,
 	DialogContent,
 	DialogOverlay,
 	DialogTitle,
 	DialogDescription,
 	DialogClose,
 } from "@radix-ui/react-dialog";
-import type { CreateVaulProps } from "../../internal/vaul";
+import type { CreateVaulProps } from "../../internal/types";
 import type { DrawerDirection, OnChangeFn } from "../../internal/types";
 
 export type Props = {
@@ -58,21 +59,12 @@ export type Props = {
 	/**
 	 * A callback function that is called when the drawer is dragged
 	 */
-	onDrag?: (
-		event: React.PointerEvent<HTMLElement> | React.TouchEvent<HTMLElement>,
-		percentageDragged: number
-	) => void;
+	onDrag?: CreateVaulProps["onDrag"] & {};
 
 	/**
 	 * A callback function that is called when the drawer is released
 	 */
-	onRelease?: (
-		event:
-			| React.PointerEvent<HTMLElement>
-			| React.MouseEvent<HTMLElement>
-			| React.TouchEvent<HTMLElement>,
-		open: boolean
-	) => void;
+	onRelease?: CreateVaulProps["onRelease"] & {};
 
 	/**
 	 * Whether this drawer is nested inside another drawer.
@@ -144,7 +136,7 @@ export type Props = {
 	 * Children
 	 */
 	children?: React.ReactNode;
-};
+} & DialogProps;
 
 export type OverlayProps = ComponentPropsWithoutRef<typeof DialogOverlay>;
 export type ContentProps = ComponentPropsWithoutRef<typeof DialogContent>;

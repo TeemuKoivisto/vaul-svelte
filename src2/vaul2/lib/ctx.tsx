@@ -1,6 +1,8 @@
 import { createContext, useContext } from "react";
-import type { DrawerContextValue } from "./types";
+import { createVaul } from "../internal/vaul";
+// import type { DrawerContextValue } from "./types";
 
+export type DrawerContextValue = ReturnType<typeof createVaul>;
 const DrawerContext = createContext<DrawerContextValue | null>(null);
 
 export function useDrawerContext() {
