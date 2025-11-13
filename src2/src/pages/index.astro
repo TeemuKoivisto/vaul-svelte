@@ -4,11 +4,13 @@ import Hero from "../components/hero.svelte";
 import { Test } from "../../vaul2/test";
 import { LeftPanel} from '../../vaul2/left-panel'
 import { RightPanel } from "../../vaul2/right-panel";
+import { DirPanel } from "../../vaul2/dir-panel";
 ---
 
 <BaseLayout title="Vaul Svelte">
 	<Hero client:load />
 	<Test client:load />
-		<LeftPanel client:load client:only="react"/>
-	<RightPanel client:load client:only="react"/>
+	<LeftPanel client:load client:only="react"/>
+	<!-- <RightPanel client:load client:only="react"/> -->
+	<DirPanel direction="right" client:load client:only="react"/>
 </BaseLayout>
